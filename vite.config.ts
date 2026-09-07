@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // This maps imports starting with '@' to be relative to the src folder, e.g. src/ui becomes @/src/ui
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
 });

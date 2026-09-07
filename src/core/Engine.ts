@@ -12,7 +12,7 @@ export interface EngineConfig {
   /** Whether to use antialiasing. Defaults to true. */
   antialias?: boolean;
   /** The background color of the renderer. */
-  clearColor?: string | number;
+  clearColor?: THREE.ColorRepresentation;
 }
 
 /**
@@ -94,14 +94,15 @@ export class Engine {
   /**
    * Adds an object to the engine's update loop.
    */
-  public addObject(obj: any) {
+  public addObject(obj: BaseObject) {
     this.objects.add(obj);
   }
 
   /**
    * Removes an object from the engine's update loop.
    */
-  public removeObject(obj: any) {
+  public removeObject(obj: BaseObject) {
+    obj.removeFrom(this.scene);
     this.objects.delete(obj);
   }
 
