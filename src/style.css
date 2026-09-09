@@ -8,4 +8,15 @@ body {
   width: 100vw;
   height: 100vh;
   display: block;
+  /* Prevent default touch actions like pinch to zoom the page */
+  touch-action: none;
+}
+
+/* Some lil-gui specific customizations */
+.lil-gui {
+  /* Narrower to fit better on mobile / narrow windows */
+  @media (max-width:1000px) {
+    --width: 170px;
+    --name-width: 30%;
+  }
 }

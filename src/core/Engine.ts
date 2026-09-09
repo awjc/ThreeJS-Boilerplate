@@ -32,7 +32,7 @@ export class Engine {
   /** Stats is a component showing FPS performance, etc */
   private stats: Stats;
   /** OrbitControls natively handles pan/zoom/rotation via mouse + touchscreen */
-  private controls: OrbitControls;
+  private controls!: OrbitControls;
 
 
   /**
@@ -58,19 +58,8 @@ export class Engine {
       config.container.appendChild(canvas);
     }
 
-    // Orbit controls — left/middle drag pans, right drag orbits
-    this.controls = new OrbitControls(this.camera, canvas);
-    // this.controls.enableDamping = true;
-    // this.controls.dampingFactor = 0.06;
-    this.controls.mouseButtons = {
-      LEFT: null as unknown as THREE.MOUSE, // repurposed for object selection
-      MIDDLE: THREE.MOUSE.PAN,
-      RIGHT: THREE.MOUSE.ROTATE,
-    };
-    // Also suppress default mouse events on the canvas
-    config.container.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-    });
+    // Orbit controls
+    this.setupOrbitControls(canvas, config);
 
     // Set up the stats display and add it to the container
     this.stats = new Stats();
@@ -89,6 +78,54 @@ export class Engine {
     }
 
     window.addEventListener('resize', () => this.onResize());
+  }
+
+  /**
+   * Initialize the camera controls for the mouse / trackpad
+   * - Select object: Left click
+   * - Rotate: Right click drag
+   * - Pan: Middle click drag / shift + left click drag (trackpad)
+   */
+  private setupOrbitControls(canvas: HTMLCanvasElement, config: EngineConfig) {
+    this.controls = new OrbitControls(this.camera, canvas);
+
+    this.controls.mouseButtons = {
+      LEFT: null as unknown as THREE.MOUSE, // normal left click = selection
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: THREE.MOUSE.ROTATE,
+    };
+
+    // OrbitControls has built-in support for:
+    // LEFT + Shift/Ctrl/Meta => PAN.
+    //
+    // We temporarily expose LEFT as ROTATE when Shift is held,
+    // because OrbitControls interprets ROTATE + Shift as PAN.
+    canvas.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (e.button === 0 && e.shiftKey) {
+          this.controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+        }
+      },
+      { capture: true }
+    );
+    const restoreLeftButton = () => {
+      this.controls.mouseButtons.LEFT =
+        null as unknown as THREE.MOUSE;
+    };
+    canvas.addEventListener('pointerup', restoreLeftButton, {
+      capture: true,
+    });
+    canvas.addEventListener('pointercancel', restoreLeftButton, {
+      capture: true,
+    });
+
+    // Prevent browser middle-mouse auto-scroll
+    config.container.addEventListener('mousedown', (e) => {
+      if (e.button === 1) {
+        e.preventDefault();
+      }
+    });
   }
 
   /**
