@@ -107,4 +107,24 @@ export class Cube extends BaseObject {
   public getSettings() {
     return this.settings;
   }
+
+  public setHovered(isHovered: boolean): void {
+    super.setHovered(isHovered);
+    // Don't change the color if already selected
+    if (this.isSelected) { return }
+    if (isHovered) {
+      this.setAppearanceVals({ color: this.HOVERED_COLOR });
+    } else {
+      this.setAppearanceVals({ color: this.settings.color });
+    }
+  }
+
+  public setSelected(isSelected: boolean): void {
+    super.setSelected(isSelected);
+    if (isSelected) {
+      this.setAppearanceVals({ color: this.SELECTED_COLOR });
+    } else {
+      this.setAppearanceVals({ color: this.settings.color });
+    }
+  }
 }

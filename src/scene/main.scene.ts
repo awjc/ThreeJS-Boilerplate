@@ -124,7 +124,6 @@ export function initScene(container: HTMLElement) {
   const sphereControls = new SphereControlPanel(gui, spheres);
   sphereControls.initialize();
 
-
   // 5. Start
   engine.start();
 }

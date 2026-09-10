@@ -5,11 +5,21 @@ import * as THREE from 'three';
  * Provides common functionality for adding/removing meshes from a scene and an update interface.
  */
 export abstract class BaseObject {
+  protected isHovered: boolean = false;
+  protected isSelected: boolean = false;
+
+  protected HOVERED_COLOR: THREE.ColorRepresentation = '#770077';
+  protected SELECTED_COLOR: THREE.ColorRepresentation = '#ff00ff';
+
+
   /**
    * Creates an instance of BaseObject.
    * @param mesh The Three.js mesh associated with this object.
    */
-  constructor(public mesh: THREE.Mesh) {}
+  constructor(public mesh: THREE.Mesh) {
+    // Store the application object on the Three.js object itself, to retrieve when needed (e.g. during raycasting)
+    mesh.userData.baseObject = this;
+  }
 
   /**
    * Updates the object's state.
@@ -31,5 +41,13 @@ export abstract class BaseObject {
    */
   public removeFrom(scene: THREE.Scene) {
     scene.remove(this.mesh);
+  }
+
+  public setHovered(isHovered: boolean) {
+    this.isHovered = isHovered;
+  }
+
+  public setSelected(isSelected: boolean) {
+    this.isSelected = isSelected;
   }
 }

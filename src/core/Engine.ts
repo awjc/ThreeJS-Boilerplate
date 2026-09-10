@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { BaseObject } from '@/components/BaseObject';
+import { SelectionManager } from '@/selection/SelectionManager';
 
 export interface EngineConfig {
   /** The HTML element that will host the canvas. */
@@ -20,19 +21,24 @@ export interface EngineConfig {
  * scene, camera, and the animation loop.
  */
 export class Engine {
+  /** The canvas where we draw everything */
+  canvas: HTMLCanvasElement;
   /** The WebGL renderer instance. */
   public renderer: THREE.WebGLRenderer;
   /** The Three.js scene. */
   public scene: THREE.Scene;
   /** The perspective camera. */
   public camera: THREE.PerspectiveCamera;
-  private objects: Set<BaseObject> = new Set();
+  /** The set of current objects in the scene that we are rendering */
+  private readonly objectsInScene: Set<BaseObject> = new Set();
   private timer: THREE.Timer = new THREE.Timer();
   private isRunning: boolean = false;
   /** Stats is a component showing FPS performance, etc */
   private stats: Stats;
   /** OrbitControls natively handles pan/zoom/rotation via mouse + touchscreen */
   private controls!: OrbitControls;
+  /** Manages object hover / selection via mouse */
+  private selectionManager: SelectionManager;
 
 
   /**
@@ -57,6 +63,7 @@ export class Engine {
       canvas = document.createElement('canvas');
       config.container.appendChild(canvas);
     }
+    this.canvas = canvas;
 
     // Orbit controls
     this.setupOrbitControls(canvas, config);
@@ -78,6 +85,28 @@ export class Engine {
     }
 
     window.addEventListener('resize', () => this.onResize());
+
+
+    this.selectionManager = new SelectionManager(
+      this.canvas,
+      this.camera,
+      this.objectsInScene,
+      this.setHoveredObject,
+      this.setSelectedObject
+    )
+    this.selectionManager.init();
+  }
+
+  public setHoveredObject = (hoveredObject: BaseObject | undefined) => {
+    // Clear any existing state
+    this.objectsInScene.forEach(obj => obj.setHovered(false));
+    hoveredObject?.setHovered(true);
+  }
+
+  public setSelectedObject = (selectedObject: BaseObject | undefined) => {
+    // Clear any existing state
+    this.objectsInScene.forEach(obj => obj.setSelected(false));
+    selectedObject?.setSelected(true);
   }
 
   /**
@@ -132,7 +161,8 @@ export class Engine {
    * Adds an object to the engine's update loop.
    */
   public addObject(obj: BaseObject) {
-    this.objects.add(obj);
+    this.objectsInScene.add(obj);
+    this.selectionManager.updateObjectsInScene(this.objectsInScene);
   }
 
   /**
@@ -140,7 +170,8 @@ export class Engine {
    */
   public removeObject(obj: BaseObject) {
     obj.removeFrom(this.scene);
-    this.objects.delete(obj);
+    this.objectsInScene.delete(obj);
+    this.selectionManager.updateObjectsInScene(this.objectsInScene);
   }
 
   /**
@@ -163,6 +194,10 @@ export class Engine {
     }
     this.isRunning = true;
     this.animate();
+
+    // Start with nothing selected
+    this.setHoveredObject(undefined);
+    this.setSelectedObject(undefined);
   }
 
   /**
@@ -176,7 +211,7 @@ export class Engine {
     this.timer.update();
 
     const delta = this.timer.getDelta();
-    for (const obj of this.objects) {
+    for (const obj of this.objectsInScene) {
       obj.update(delta);
     }
 
