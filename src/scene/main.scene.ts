@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { Cube, CubeSettings } from '@/components/Cube';
 import { CubeControlPanel } from '@/ui/CubeControlPanel';
 import { Engine } from '@/core/Engine';
+import { Sphere, SphereSettings } from '@/components/Sphere';
+import { SphereControlPanel } from '@/ui/SphereControlPanel';
+import GUI from 'lil-gui';
 
 /**
  * Initializes the main 3D scene, including the engine, lighting, cube, and control panel.
@@ -52,7 +55,11 @@ export function initScene(container: HTMLElement) {
 
 
   // 4. Setup Control Panel with custom action set
-  const controls = new CubeControlPanel(cubes);
+
+  // This will be the top level gui shared by the different panels
+  const gui = new GUI({ /* some options can go here */ });
+
+  const cubeControls = new CubeControlPanel(gui, cubes);
 
   const spawnNewCube = () => {
     const newCubeSettings: CubeSettings = {
@@ -77,14 +84,14 @@ export function initScene(container: HTMLElement) {
     engine.addObject(newCube);
     cubes.push(newCube);
 
-    controls.initializeCubeSettings(newCube, `Cube ${cubes.length}`);
+    cubeControls.initializeCubeSettings(newCube, `Cube ${cubes.length}`);
   }
 
   const deleteLastCube = () => {
     const lastCube = cubes.pop()
     if (lastCube) {
       engine.removeObject(lastCube);
-      controls.removeCubeSettings(lastCube);
+      cubeControls.removeCubeSettings(lastCube);
     }
   }
 
@@ -97,8 +104,26 @@ export function initScene(container: HTMLElement) {
     }
   }
 
-  const actions = { spawnNewCube, deleteLastCube, deleteAllCubes }
-  controls.initialize(actions);
+  const cubeActions = { spawnNewCube, deleteLastCube, deleteAllCubes }
+  cubeControls.initialize(cubeActions);
+
+
+  const sphereSettings: SphereSettings = {
+    radius: 1.5,
+    color: '#ff5900',
+    position: new THREE.Vector3(1.0, -1.0, -0.8),
+    rotationSpeed: new THREE.Vector3(0.2, 0.7, 0.8),
+    metalness: 0.9,
+    roughness: 0.6,
+    flatShading: true,
+  };
+  const sphere = new Sphere(engine.scene, sphereSettings);
+  engine.addObject(sphere);
+
+  const spheres = [sphere];
+  const sphereControls = new SphereControlPanel(gui, spheres);
+  sphereControls.initialize();
+
 
   // 5. Start
   engine.start();
