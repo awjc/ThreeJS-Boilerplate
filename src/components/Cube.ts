@@ -17,11 +17,12 @@ export interface CubeSettings {
   metalness: number;
   /** The roughness of the cube's material. */
   roughness: number;
+  /** Whether the shading is flat or the standard material */
+  flatShading: boolean;
 }
 
 /**
- * A Cube component that extends BaseObject, representing a 3D cube in the scene.
- * Handles its own rotation and appearance updates.
+ * A 3D cube in the scene.
  */
 export class Cube extends BaseObject {
   private settings: CubeSettings;
@@ -29,15 +30,20 @@ export class Cube extends BaseObject {
   /**
    * Creates a new Cube instance and adds it to the scene.
    * @param scene The Three.js scene.
-   * @param initialSettings The initial settings for the cube.
+   * @param initialSettings The initial settings.
    */
   constructor(scene: THREE.Scene, initialSettings: CubeSettings) {
     const geometry = new THREE.BoxGeometry(initialSettings.size, initialSettings.size, initialSettings.size);
-    const material = new THREE.MeshStandardMaterial({
-      color: initialSettings.color,
-      metalness: initialSettings.metalness,
-      roughness: initialSettings.roughness
-    });
+    const material = initialSettings.flatShading ?
+      new THREE.MeshPhongMaterial({
+        color: initialSettings.color,
+        flatShading: true
+      }) :
+      new THREE.MeshStandardMaterial({
+        color: initialSettings.color,
+        metalness: initialSettings.metalness,
+        roughness: initialSettings.roughness
+      });
 
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(initialSettings.position.x, initialSettings.position.y, initialSettings.position.z);
@@ -48,7 +54,7 @@ export class Cube extends BaseObject {
   }
 
   /**
-   * Updates the cube's rotation based on delta time.
+   * Updates the rotation based on delta time.
    * @param deltaSecs The time elapsed since the last update in seconds.
    */
   public update(deltaSecs: number): void {
@@ -66,7 +72,7 @@ export class Cube extends BaseObject {
   }
 
   /**
-   * Updates the visual appearance of the cube's material.
+   * Updates the visual appearance of the material.
    * @param newVals An object containing the partial updates for the settings.
    */
   public setAppearanceVals(newVals: Partial<CubeSettings>) {
@@ -80,11 +86,23 @@ export class Cube extends BaseObject {
     if (newVals.color !== undefined) mat.color.set(newVals.color);
     if (newVals.metalness !== undefined) mat.metalness = newVals.metalness;
     if (newVals.roughness !== undefined) mat.roughness = newVals.roughness;
+
+    if (newVals.flatShading !== undefined) {
+      this.mesh.material = newVals.flatShading ?
+        new THREE.MeshPhongMaterial({
+          color: this.settings.color,
+          flatShading: true
+        }) :
+        new THREE.MeshStandardMaterial({
+          color: this.settings.color,
+          metalness: this.settings.metalness,
+          roughness: this.settings.roughness
+        });
+    }
   }
 
   /**
-   * Gets the current settings of the cube.
-   * @returns The CubeSettings object.
+   * Gets the current settings.
    */
   public getSettings() {
     return this.settings;

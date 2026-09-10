@@ -15,9 +15,11 @@ type Actions = {
 export class CubeControlPanel {
   /** The main top-level gui */
   private gui: GUI;
+  /** Subfolder for holding the cube folders */
+  private cubesFolder!: GUI;
   /** A mapping of each cube object to its own folder */
   private folders: Map<Cube, GUI>;
-
+  /** The controllers for delete actions which get enabled/disabled depending on number of cubes */
   private deleteActionControllers: Set<Controller>;
 
   /**
@@ -25,7 +27,7 @@ export class CubeControlPanel {
    * @param cube The Cube object to control.
    */
   constructor(private cubes: Cube[]) {
-    this.gui = new GUI();
+    this.gui = new GUI({ /* some options can go here */ });
     this.folders = new Map();
     this.deleteActionControllers = new Set();
   }
@@ -40,18 +42,21 @@ export class CubeControlPanel {
     this.deleteActionControllers.add(
       this.gui.add(actions, 'deleteAllCubes').name('Delete All Cubes'));
 
+    this.cubesFolder = this.gui.addFolder('Cube Data');
+    this.cubesFolder.close();
+
     this.cubes.forEach((cube, idx) => {
-      this.initializeCubeSettings(cube, `Cube ${idx + 1} Settings`);
+      this.initializeCubeSettings(cube, `Cube ${idx + 1}`);
     });
   }
 
   /**
    * Adds a new settings panel to control the given cube (with the given name)
    */
-  public initializeCubeSettings(cube: Cube, cubeName: string) {
+  public initializeCubeSettings(cube: Cube, name: string) {
     const cubeSettings = cube.getSettings();
 
-    const folder = this.gui.addFolder(cubeName);
+    const folder = this.cubesFolder.addFolder(name);
 
     folder.add(cubeSettings, 'size', 0.1, 5).name('Size').onChange((val: number) => {
       cube.setAppearanceVals({ size: val })
@@ -61,22 +66,26 @@ export class CubeControlPanel {
       cube.setAppearanceVals({ color: val });
     });
 
-    folder.add(cubeSettings, 'metalness', 0, 1).name('Metalness').onChange((val: number) => {
+    folder.add(cubeSettings, 'metalness', 0, 1).name('Metal').onChange((val: number) => {
       cube.setAppearanceVals({ metalness: val });
     });
 
-    folder.add(cubeSettings, 'roughness', 0, 1).name('Roughness').onChange((val: number) => {
+    folder.add(cubeSettings, 'roughness', 0, 1).name('Rough').onChange((val: number) => {
       cube.setAppearanceVals({ roughness: val });
     });
 
 
-    folder.add(cubeSettings.position, 'x', -4, 4).name('Position X').onChange(() => { cube.syncPosition(); });
-    folder.add(cubeSettings.position, 'y', -4, 4).name('Position Y').onChange(() => { cube.syncPosition(); });
-    folder.add(cubeSettings.position, 'z', -4, 4).name('Position Z').onChange(() => { cube.syncPosition(); });
+    folder.add(cubeSettings.position, 'x', -4, 4).name('Pos X').onChange(() => { cube.syncPosition(); });
+    folder.add(cubeSettings.position, 'y', -4, 4).name('Pos Y').onChange(() => { cube.syncPosition(); });
+    folder.add(cubeSettings.position, 'z', -4, 4).name('Pos Z').onChange(() => { cube.syncPosition(); });
 
-    folder.add(cubeSettings.rotationSpeed, 'x', 0, 5).name('Rotation X');
-    folder.add(cubeSettings.rotationSpeed, 'y', 0, 5).name('Rotation Y');
-    folder.add(cubeSettings.rotationSpeed, 'z', 0, 5).name('Rotation Z');
+    folder.add(cubeSettings.rotationSpeed, 'x', 0, 5).name('Rot X');
+    folder.add(cubeSettings.rotationSpeed, 'y', 0, 5).name('Rot Y');
+    folder.add(cubeSettings.rotationSpeed, 'z', 0, 5).name('Rot Z');
+
+    folder.add(cubeSettings, 'flatShading').name('Flat Shading').onChange((val: boolean) => {
+      cube.setAppearanceVals({ flatShading: val });
+    });
 
     // Start with the folder collapsed to avoid clutter
     folder.close()

@@ -29,7 +29,8 @@ export function initScene(container: HTMLElement) {
     position: new THREE.Vector3(-2.0, 0.0, 0.0),
     rotationSpeed: new THREE.Vector3(0.7, 0.9, 0.1),
     metalness: 0.9,
-    roughness: 0.6
+    roughness: 0.6,
+    flatShading: false,
   };
 
   const cube2Settings: CubeSettings = {
@@ -38,7 +39,8 @@ export function initScene(container: HTMLElement) {
     position: new THREE.Vector3(1.0, 1.0, 1.0),
     rotationSpeed: new THREE.Vector3(1.0, 0.5, 0.3),
     metalness: 0.9,
-    roughness: 0.6
+    roughness: 0.6,
+    flatShading: true,
   };
 
   const cubes: Cube[] = [];
@@ -47,6 +49,7 @@ export function initScene(container: HTMLElement) {
     engine.addObject(cube);
     cubes.push(cube);
   }
+
 
   // 4. Setup Control Panel with custom action set
   const controls = new CubeControlPanel(cubes);
@@ -67,13 +70,14 @@ export function initScene(container: HTMLElement) {
         THREE.MathUtils.randFloat(0, 2),
         THREE.MathUtils.randFloat(0, 2)),
       metalness: THREE.MathUtils.randFloat(0.2, 0.9),
-      roughness: THREE.MathUtils.randFloat(0.2, 0.9)
+      roughness: THREE.MathUtils.randFloat(0.2, 0.9),
+      flatShading: THREE.MathUtils.randFloat(0, 1) < 0.5,
     };
     const newCube = new Cube(engine.scene, newCubeSettings);
     engine.addObject(newCube);
     cubes.push(newCube);
 
-    controls.initializeCubeSettings(newCube, `Cube ${cubes.length} Settings`);
+    controls.initializeCubeSettings(newCube, `Cube ${cubes.length}`);
   }
 
   const deleteLastCube = () => {
@@ -85,6 +89,9 @@ export function initScene(container: HTMLElement) {
   }
 
   const deleteAllCubes = () => {
+    const confirmed = window.confirm('Delete all cubes?');
+    if (!confirmed) return;
+
     while (cubes.length > 0) {
       deleteLastCube()
     }
