@@ -11,13 +11,13 @@ import GUI from 'lil-gui';
  * @param container The HTML element where the scene will be rendered.
  */
 export function initScene(container: HTMLElement) {
-  // 1. Initialize Engine
+  // Initialize Engine
   const engine = new Engine({
     container,
     clearColor: '#1a1a1a'
   });
 
-  // 2. Add Lighting
+  // Add Lighting
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   engine.scene.add(ambientLight);
 
@@ -25,7 +25,7 @@ export function initScene(container: HTMLElement) {
   pointLight.position.set(5, 5, 5);
   engine.scene.add(pointLight);
 
-  // 3. Add Components
+  // Add components
   const cube1Settings: CubeSettings = {
     size: 2.0,
     color: '#00a2ff',
@@ -53,13 +53,13 @@ export function initScene(container: HTMLElement) {
     cubes.push(cube);
   }
 
-
-  // 4. Setup Control Panel with custom action set
+  // Setup Control Panel with custom action set
 
   // This will be the top level gui shared by the different panels
   const gui = new GUI({ /* some options can go here */ });
 
   const cubeControls = new CubeControlPanel(gui, cubes);
+  cubes.forEach(cube => cube.setControls(cubeControls));
 
   const spawnNewCube = () => {
     const newCubeSettings: CubeSettings = {
@@ -81,6 +81,7 @@ export function initScene(container: HTMLElement) {
       flatShading: THREE.MathUtils.randFloat(0, 1) < 0.5,
     };
     const newCube = new Cube(engine.scene, newCubeSettings);
+    newCube.setControls(cubeControls);
     engine.addObject(newCube);
     cubes.push(newCube);
 
@@ -123,7 +124,8 @@ export function initScene(container: HTMLElement) {
   const spheres = [sphere];
   const sphereControls = new SphereControlPanel(gui, spheres);
   sphereControls.initialize();
+  spheres.forEach(sphere => sphere.setControls(sphereControls));
 
-  // 5. Start
+  // Start
   engine.start();
 }

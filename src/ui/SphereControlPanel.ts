@@ -1,4 +1,5 @@
 import { Sphere } from '@/components/Sphere';
+import { BaseControlPanel } from '@/ui/BaseControlPanel';
 import { GUI } from 'lil-gui';
 
 
@@ -6,21 +7,20 @@ import { GUI } from 'lil-gui';
  * A control panel for manipulating the properties of Sphere objects.
  * Uses lil-gui to provide a user interface.
  */
-export class SphereControlPanel {
-  /** Subfolder for holding the sphere folders */
-  private spheresFolder!: GUI;
-
+export class SphereControlPanel extends BaseControlPanel {
   /**
    * Creates a new control panel instance.
    */
-  constructor(private gui: GUI, private spheres: Sphere[]) { }
+  constructor(gui: GUI, private spheres: Sphere[]) {
+    super(gui);
+  }
 
   /**
    * Initializes the GUI with controls for the objects' settings.
    */
   public initialize() {
-    this.spheresFolder = this.gui.addFolder('Sphere Data');
-    this.spheresFolder.close();
+    this.topLevelFolder = this.gui.addFolder('Sphere Data');
+    this.topLevelFolder.close();
 
     this.spheres.forEach((sphere, idx) => {
       this.initializeSphereSettings(sphere, `Sphere ${idx + 1}`);
@@ -33,7 +33,7 @@ export class SphereControlPanel {
   public initializeSphereSettings(sphere: Sphere, name: string) {
     const sphereSettings = sphere.getSettings();
 
-    const folder = this.spheresFolder.addFolder(name);
+    const folder = this.topLevelFolder.addFolder(name);
 
     folder.add(sphereSettings, 'radius', 0.1, 5).name('Size').onChange((val: number) => {
       sphere.setAppearanceVals({ radius: val })
@@ -66,6 +66,9 @@ export class SphereControlPanel {
 
     // Start with the folder collapsed to avoid clutter
     folder.close()
+
+    // Keep track of it in the main map
+    this.objFolders.set(sphere, folder);
   }
 
   /**

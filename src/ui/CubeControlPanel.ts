@@ -1,4 +1,5 @@
 import { Cube } from '@/components/Cube';
+import { BaseControlPanel } from '@/ui/BaseControlPanel';
 import { Controller, GUI } from 'lil-gui';
 
 
@@ -12,19 +13,12 @@ type Actions = {
  * A control panel for manipulating the properties of Cube objects.
  * Uses lil-gui to provide a user interface.
  */
-export class CubeControlPanel {
-  /** Subfolder for holding the cube folders */
-  private cubesFolder!: GUI;
-  /** A mapping of each cube object to its own folder */
-  private folders: Map<Cube, GUI>;
+export class CubeControlPanel extends BaseControlPanel {
   /** The controllers for delete actions which get enabled/disabled depending on number of cubes */
   private deleteActionControllers: Set<Controller>;
 
-  /**
-   * Creates a new control panel instance in the given top-level GUI
-   */
-  constructor(private gui: GUI, private cubes: Cube[]) {
-    this.folders = new Map();
+  constructor(gui: GUI, private cubes: Cube[]) {
+    super(gui);
     this.deleteActionControllers = new Set();
   }
 
@@ -38,8 +32,8 @@ export class CubeControlPanel {
     this.deleteActionControllers.add(
       this.gui.add(actions, 'deleteAllCubes').name('Delete All Cubes'));
 
-    this.cubesFolder = this.gui.addFolder('Cube Data');
-    this.cubesFolder.close();
+    this.topLevelFolder = this.gui.addFolder('Cube Data');
+    this.topLevelFolder.close();
 
     this.cubes.forEach((cube, idx) => {
       this.initializeCubeSettings(cube, `Cube ${idx + 1}`);
@@ -52,7 +46,7 @@ export class CubeControlPanel {
   public initializeCubeSettings(cube: Cube, name: string) {
     const cubeSettings = cube.getSettings();
 
-    const folder = this.cubesFolder.addFolder(name);
+    const folder = this.topLevelFolder.addFolder(name);
 
     folder.add(cubeSettings, 'size', 0.1, 5).name('Size').onChange((val: number) => {
       cube.setAppearanceVals({ size: val })
@@ -87,7 +81,7 @@ export class CubeControlPanel {
     folder.close()
 
     // Keep track of it in the main map
-    this.folders.set(cube, folder);
+    this.objFolders.set(cube, folder);
 
     // Re-enable the delete controls if they were disabled previously
     this.deleteActionControllers.forEach(controller => controller.enable())
@@ -97,13 +91,13 @@ export class CubeControlPanel {
    * Removes the settings folder corresponding to the given cube
    */
   public removeCubeSettings(cube: Cube) {
-    const folder = this.folders.get(cube);
+    const folder = this.objFolders.get(cube);
     if (folder) {
       folder.destroy();
-      this.folders.delete(cube);
+      this.objFolders.delete(cube);
     }
 
-    if (this.folders.size == 0) {
+    if (this.objFolders.size == 0) {
       this.deleteActionControllers.forEach(controller => controller.disable())
     }
   }

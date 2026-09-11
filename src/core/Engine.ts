@@ -4,6 +4,9 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { BaseObject } from '@/components/BaseObject';
 import { SelectionManager } from '@/selection/SelectionManager';
 
@@ -40,6 +43,9 @@ export class Engine {
   /** Manages object hover / selection via mouse */
   private selectionManager: SelectionManager;
 
+  private composer!: EffectComposer;
+  private hoverOutlinePass!: OutlinePass;
+  private selectionOutlinePass!: OutlinePass;
 
   /**
    * Creates a new engine instance.
@@ -86,7 +92,38 @@ export class Engine {
 
     window.addEventListener('resize', () => this.onResize());
 
+    // Initialize Post-processing
+    this.composer = new EffectComposer(this.renderer);
+    const renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(renderPass);
 
+    // Setup Hover Outline Pass (gray)
+    this.hoverOutlinePass = new OutlinePass(
+      new THREE.Vector2(config.container.clientWidth, config.container.clientHeight),
+      this.scene,
+      this.camera
+    );
+    this.hoverOutlinePass.edgeStrength = 2.0;
+    this.hoverOutlinePass.edgeThickness = 1.0;
+    this.hoverOutlinePass.edgeGlow = 0.5;
+    this.hoverOutlinePass.visibleEdgeColor.set('#999999');
+    this.hoverOutlinePass.hiddenEdgeColor.set('#000000');
+    this.composer.addPass(this.hoverOutlinePass);
+
+    // Setup Selection Outline Pass (white)
+    this.selectionOutlinePass = new OutlinePass(
+      new THREE.Vector2(config.container.clientWidth, config.container.clientHeight),
+      this.scene,
+      this.camera
+    );
+    this.selectionOutlinePass.edgeStrength = 4.0;
+    this.selectionOutlinePass.edgeThickness = 1.0;
+    this.selectionOutlinePass.edgeGlow = 1.0;
+    this.selectionOutlinePass.visibleEdgeColor.set('#ffffff');
+    this.selectionOutlinePass.hiddenEdgeColor.set('#000000');
+    this.composer.addPass(this.selectionOutlinePass);
+
+    // Selection manager does mouse raycasting to find which object is clicked
     this.selectionManager = new SelectionManager(
       this.canvas,
       this.camera,
@@ -101,12 +138,27 @@ export class Engine {
     // Clear any existing state
     this.objectsInScene.forEach(obj => obj.setHovered(false));
     hoveredObject?.setHovered(true);
+    this.updateOutline();
   }
 
   public setSelectedObject = (selectedObject: BaseObject | undefined) => {
     // Clear any existing state
     this.objectsInScene.forEach(obj => obj.setSelected(false));
     selectedObject?.setSelected(true);
+    this.updateOutline();
+  }
+
+  private updateOutline() {
+    const hovered: THREE.Object3D[] = [];
+    const selected: THREE.Object3D[] = [];
+
+    this.objectsInScene.forEach(obj => {
+      if (obj.isHovered) hovered.push(obj.mesh);
+      if (obj.isSelected) selected.push(obj.mesh);
+    });
+
+    this.hoverOutlinePass.selectedObjects = hovered;
+    this.selectionOutlinePass.selectedObjects = selected;
   }
 
   /**
@@ -183,6 +235,10 @@ export class Engine {
     this.renderer.setSize(width, height);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
+
+    this.composer.setSize(width, height);
+    this.hoverOutlinePass.setSize(width, height);
+    this.selectionOutlinePass.setSize(width, height);
   }
 
   /**
@@ -215,11 +271,9 @@ export class Engine {
       obj.update(delta);
     }
 
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
 
     this.controls.update();
     this.stats.update();
   }
 }
-
-
