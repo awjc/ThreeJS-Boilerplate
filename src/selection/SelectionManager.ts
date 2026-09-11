@@ -2,7 +2,7 @@ import { BaseObject } from '@/components/BaseObject';
 import * as THREE from 'three';
 
 /** Mouse movement below this many pixels is treated as a click, not a drag. */
-const DRAG_THRESHOLD = 4;
+const DRAG_THRESHOLD = 10;
 
 /**
  * SelectionManager — listens for left-click on the canvas and raycasts

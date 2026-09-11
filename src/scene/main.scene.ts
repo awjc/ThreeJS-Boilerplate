@@ -29,7 +29,7 @@ export function initScene(container: HTMLElement) {
   const cube1Settings: CubeSettings = {
     size: 2.0,
     color: '#00a2ff',
-    position: new THREE.Vector3(-2.0, 0.0, 0.0),
+    position: new THREE.Vector3(-2.5, 0.0, -1.0),
     rotationSpeed: new THREE.Vector3(0.7, 0.9, 0.1),
     metalness: 0.9,
     roughness: 0.6,
@@ -39,7 +39,7 @@ export function initScene(container: HTMLElement) {
   const cube2Settings: CubeSettings = {
     size: 1.0,
     color: '#00ff7b',
-    position: new THREE.Vector3(1.0, 1.0, 1.0),
+    position: new THREE.Vector3(1.5, 1.0, 1.0),
     rotationSpeed: new THREE.Vector3(1.0, 0.5, 0.3),
     metalness: 0.9,
     roughness: 0.6,
@@ -69,9 +69,9 @@ export function initScene(container: HTMLElement) {
         THREE.MathUtils.randFloat(0.7, 1),
         THREE.MathUtils.randFloat(0.3, 1)),
       position: new THREE.Vector3(
-        THREE.MathUtils.randFloat(-3, 3),
-        THREE.MathUtils.randFloat(-3, 3),
-        THREE.MathUtils.randFloat(-3, 3)),
+        THREE.MathUtils.randFloat(-5, 5),
+        THREE.MathUtils.randFloat(-5, 5),
+        THREE.MathUtils.randFloat(-5, 5)),
       rotationSpeed: new THREE.Vector3(
         THREE.MathUtils.randFloat(0, 2),
         THREE.MathUtils.randFloat(0, 2),
@@ -112,7 +112,7 @@ export function initScene(container: HTMLElement) {
   const sphereSettings: SphereSettings = {
     radius: 1.5,
     color: '#ff5900',
-    position: new THREE.Vector3(1.0, -1.0, -0.8),
+    position: new THREE.Vector3(1.0, -1.0, -1.8),
     rotationSpeed: new THREE.Vector3(0.2, 0.7, 0.8),
     metalness: 0.9,
     roughness: 0.6,
