@@ -21,11 +21,11 @@ export function initScene(container: HTMLElement) {
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
   engine.scene.add(ambientLight);
 
-  const pointLight1 = new THREE.PointLight(0xffffff, 80);
+  const pointLight1 = new THREE.PointLight(0xffffff, 60);
   pointLight1.position.set(5, 5, 5);
   engine.scene.add(pointLight1);
 
-  const pointLight2 = new THREE.PointLight(0xffffff, 40);
+  const pointLight2 = new THREE.PointLight(0xffffff, 25);
   pointLight2.position.set(-3, 2, 1);
   engine.scene.add(pointLight2);
 

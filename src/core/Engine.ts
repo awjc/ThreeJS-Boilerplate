@@ -61,7 +61,8 @@ export class Engine {
       0.1,
       1000
     );
-    this.camera.position.z = 8;
+    // Start more zoomed out on mobile
+    this.camera.position.z = config.container.clientWidth < 1000 ? 9 : 6;
 
     // Ensure a canvas exists in the container or create one
     let canvas = config.container.querySelector('canvas');
