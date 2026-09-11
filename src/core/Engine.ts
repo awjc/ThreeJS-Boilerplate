@@ -61,7 +61,7 @@ export class Engine {
       0.1,
       1000
     );
-    this.camera.position.z = 5;
+    this.camera.position.z = 8;
 
     // Ensure a canvas exists in the container or create one
     let canvas = config.container.querySelector('canvas');
