@@ -122,10 +122,23 @@ export function initScene(container: HTMLElement) {
     roughness: 0.6,
     flatShading: true,
   };
-  const sphere = new Sphere(engine.scene, sphereSettings);
-  engine.addObject(sphere);
+  const sphere2Settings: SphereSettings = {
+    radius: 1.0,
+    color: '#a360ff',
+    position: new THREE.Vector3(0.5, 3.0, -3.0),
+    rotationSpeed: new THREE.Vector3(0.4, 0.3, 0.6),
+    metalness: 0.7,
+    roughness: 0.45,
+    flatShading: true,
+  };
 
-  const spheres = [sphere];
+  const spheres: Sphere[] = [];
+  for (const settings of [sphereSettings, sphere2Settings]) {
+    const sphere = new Sphere(engine.scene, settings);
+    engine.addObject(sphere);
+    spheres.push(sphere);
+  }
+
   const sphereControls = new SphereControlPanel(gui, spheres);
   sphereControls.initialize();
   spheres.forEach(sphere => sphere.setControls(sphereControls));
